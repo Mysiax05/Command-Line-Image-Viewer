@@ -1,8 +1,8 @@
 use image::GenericImageView;
 
 
-fn convert_png(sciezka: &str) -> Vec<Vec<[u8; 3]>> {
-    let img = image::open(sciezka).expect("error opening image");
+fn convert_png(path: &str) -> Vec<Vec<[u8; 3]>> {
+    let img = image::open(path).expect("error opening image");
     let (width, height) = img.dimensions();
     let rgb_image = img.to_rgb8();
 
@@ -37,7 +37,7 @@ fn render(image_2d: Vec<Vec<[u8; 3]>>) {
 }
 
 fn main() {
-    let sciezka = "test.png";
-    let obraz = convert_png(sciezka);
-    print!("{:?}", obraz);
+    let path = "pingwin.png";
+    let image_2d = convert_png(path);
+    render(image_2d);
 }
