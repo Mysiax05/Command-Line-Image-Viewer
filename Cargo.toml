@@ -7,4 +7,5 @@ edition = "2021"
 image = "0.25"
 crossterm = "0.27"
 clap = { version = "4.4", features = ["derive"] }
+rayon = "1"
 
