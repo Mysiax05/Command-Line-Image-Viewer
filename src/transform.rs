@@ -2,13 +2,6 @@ use image::{DynamicImage, imageops::FilterType};
 
 use crate::args::RenderMode;
 
-/// Scale image to fit within the given terminal dimensions.
-///
-/// Terminal characters are ~2× taller than wide (aspect ratio A ≈ 2), so height
-/// is halved to produce undistorted output. Halfblock mode doubles the effective
-/// pixel budget vertically (two pixel rows per terminal row).
-///
-/// `fast` — use Triangle (bilinear) instead of Lanczos3; recommended for animation.
 pub fn scale_image(
     img: &DynamicImage,
     term_w: u16,
@@ -31,13 +24,10 @@ pub fn scale_image(
     img.resize_exact(new_w, new_h, filter)
 }
 
-/// Convert RGB to grayscale luminance using the Rec. 601 formula.
 pub fn to_grayscale_value(r: u8, g: u8, b: u8) -> u8 {
     (0.299 * r as f64 + 0.587 * g as f64 + 0.114 * b as f64) as u8
 }
 
-/// Map a brightness value (0–255) to an ASCII character.
-/// Dark pixels → dense characters, bright pixels → sparse characters.
 const ASCII_RAMP: &[u8] = b" .:-=+*#%@";
 
 pub fn brightness_to_ascii(brightness: u8) -> char {

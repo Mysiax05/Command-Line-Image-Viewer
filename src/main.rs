@@ -30,10 +30,6 @@ fn main() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 fn get_dimensions(args: &Args) -> (u16, u16) {
     let (tw, th) = terminal::get_terminal_size();
     (args.width.unwrap_or(tw), args.height.unwrap_or(th.saturating_sub(1)))
@@ -53,10 +49,6 @@ fn render_image(img: &DynamicImage, tw: u16, th: u16, mode: &RenderMode, fast: b
         RenderMode::Ascii     => render::render_ascii(&rgb),
     }
 }
-
-// ---------------------------------------------------------------------------
-// Runners
-// ---------------------------------------------------------------------------
 
 fn run_static(args: &Args) {
     let img = loader::load_static_image(&args.path)
@@ -81,8 +73,6 @@ fn run_gif(args: &Args) {
     let fps = args.fps;
     let override_delay = Duration::from_secs_f64(1.0 / fps);
 
-    // Pre-render all frames in parallel before the animation loop.
-    // Uses Triangle (bilinear) filter — fast enough for smooth playback.
     let rendered: Vec<(String, Duration)> = frames
         .par_iter()
         .map(|f| {
