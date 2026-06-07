@@ -5,21 +5,19 @@ use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-/// Load a static image (PNG, JPEG, BMP) from the given path.
+/// loads a static image from the given path
 pub fn load_static_image(path: &Path) -> Result<DynamicImage, String> {
     ImageReader::open(path)
         .map_err(|e| format!("Cannot open file '{}': {}", path.display(), e))?
         .decode()
         .map_err(|e| format!("Cannot decode image '{}': {}", path.display(), e))
 }
-
-/// Represents a single decoded GIF frame with its pixel data and delay.
 pub struct GifFrame {
     pub image: RgbaImage,
     pub delay: Duration,
 }
 
-/// Load all frames from a GIF file.
+///  loads all frames from a GIF file
 pub fn load_gif_frames(path: &Path) -> Result<Vec<GifFrame>, String> {
     let file =
         File::open(path).map_err(|e| format!("Cannot open file '{}': {}", path.display(), e))?;
@@ -52,7 +50,7 @@ pub fn load_gif_frames(path: &Path) -> Result<Vec<GifFrame>, String> {
         .collect())
 }
 
-/// Collect all supported image file paths from a directory.
+/// collects all supported image file paths from a directory
 pub fn load_directory_images(path: &Path) -> Result<Vec<PathBuf>, String> {
     if !path.is_dir() {
         return Err(format!("'{}' is not a directory", path.display()));
@@ -83,7 +81,7 @@ pub fn load_directory_images(path: &Path) -> Result<Vec<PathBuf>, String> {
     Ok(images)
 }
 
-/// Check if a file is a GIF by extension.
+/// check if a file is a GIF
 pub fn is_gif(path: &Path) -> bool {
     path.extension()
         .and_then(|ext| ext.to_str())

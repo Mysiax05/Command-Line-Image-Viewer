@@ -4,20 +4,13 @@ use std::io::{self, BufWriter, Write};
 
 use crate::transform::{to_grayscale_value, brightness_to_ascii};
 
-// ---------------------------------------------------------------------------
-// Truecolor — one colored space per pixel
-// ---------------------------------------------------------------------------
-
-/// Render using 24-bit truecolor background colors.
-///
-/// Emits a new color escape only when the color changes — not once per pixel.
-/// This typically cuts output size 50–70% compared to resetting every pixel.
+// rendering truecolor output using ANSI 24-bit color escape codes
 pub fn render_truecolor(img: &RgbImage) -> String {
     let (width, height) = img.dimensions();
     let mut buf = String::with_capacity((width as usize * 15 + 8) * height as usize);
 
     for y in 0..height {
-        let mut cur = (u8::MAX, u8::MAX, u8::MAX); // impossible initial color
+        let mut cur = (u8::MAX, u8::MAX, u8::MAX);
 
         for x in 0..width {
             let p = img.get_pixel(x, y);
@@ -33,13 +26,7 @@ pub fn render_truecolor(img: &RgbImage) -> String {
     buf
 }
 
-// ---------------------------------------------------------------------------
-// Halfblock — two pixel rows per terminal row using ▀
-// ---------------------------------------------------------------------------
-
-/// Render using half-block characters (▀) for double vertical resolution.
-///
-/// Emits fg+bg escape only when either color changes from the previous cell.
+// render using upper half block characters with separate foreground and background colors for each pixel pair
 pub fn render_halfblock(img: &RgbImage) -> String {
     let (width, height) = img.dimensions();
     let mut buf = String::with_capacity((width as usize * 20 + 8) * (height as usize / 2 + 1));
@@ -77,13 +64,7 @@ pub fn render_halfblock(img: &RgbImage) -> String {
     buf
 }
 
-// ---------------------------------------------------------------------------
-// Grayscale
-// ---------------------------------------------------------------------------
-
-/// Render using ANSI 24-step grayscale palette (indices 232–255).
-///
-/// With only 24 possible values, runs are long → very compact output.
+// render using 24 levels of grayscale mapped to ANSI 256-color palette
 pub fn render_grayscale(img: &RgbImage) -> String {
     let (width, height) = img.dimensions();
     let mut buf = String::with_capacity((width as usize * 8 + 8) * height as usize);
@@ -106,11 +87,7 @@ pub fn render_grayscale(img: &RgbImage) -> String {
     buf
 }
 
-// ---------------------------------------------------------------------------
-// ASCII art
-// ---------------------------------------------------------------------------
-
-/// Render as ASCII art using brightness-mapped characters.
+// render using 10 levels of brightness mapped to ASCII characters
 pub fn render_ascii(img: &RgbImage) -> String {
     let (width, height) = img.dimensions();
     let mut buf = String::with_capacity((width as usize + 3) * height as usize);
@@ -126,12 +103,7 @@ pub fn render_ascii(img: &RgbImage) -> String {
     buf
 }
 
-// ---------------------------------------------------------------------------
-// Output
-// ---------------------------------------------------------------------------
-
-/// Flush a rendered frame buffer to stdout using BufWriter for performance.
-/// Moves cursor to top-left before drawing — no screen clear, no flicker.
+// display a rendered frame
 pub fn display_frame(frame: &str) {
     let stdout = io::stdout();
     let mut writer = BufWriter::new(stdout.lock());

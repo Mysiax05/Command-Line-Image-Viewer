@@ -30,20 +30,21 @@ fn main() {
     }
 }
 
-// ---------------------------------------------------------------------------
 // Helpers
-// ---------------------------------------------------------------------------
 
+// get terminal dimensions, applying user overrides and reserving one line for the status bar
 fn get_dimensions(args: &Args) -> (u16, u16) {
     let (tw, th) = terminal::get_terminal_size();
     (args.width.unwrap_or(tw), args.height.unwrap_or(th.saturating_sub(1)))
 }
 
+// exit with an error message
 fn exit_error(msg: &str) -> ! {
     eprintln!("Error: {}", msg);
     std::process::exit(1);
 }
 
+// render an image to a string based on the selected mode and dimensions
 fn render_image(img: &DynamicImage, tw: u16, th: u16, mode: &RenderMode, fast: bool) -> String {
     let rgb = transform::scale_image(img, tw, th, mode, fast).to_rgb8();
     match mode {
@@ -54,10 +55,9 @@ fn render_image(img: &DynamicImage, tw: u16, th: u16, mode: &RenderMode, fast: b
     }
 }
 
-// ---------------------------------------------------------------------------
 // Runners
-// ---------------------------------------------------------------------------
 
+// display a static image until the user quits
 fn run_static(args: &Args) {
     let img = loader::load_static_image(&args.path)
         .unwrap_or_else(|e| exit_error(&e));
@@ -69,6 +69,7 @@ fn run_static(args: &Args) {
     terminal::leave_raw_mode();
 }
 
+// display an gif, respecting frame delays and user-specified fps overrides
 fn run_gif(args: &Args) {
     let frames = loader::load_gif_frames(&args.path)
         .unwrap_or_else(|e| exit_error(&e));
@@ -81,8 +82,6 @@ fn run_gif(args: &Args) {
     let fps = args.fps;
     let override_delay = Duration::from_secs_f64(1.0 / fps);
 
-    // Pre-render all frames in parallel before the animation loop.
-    // Uses Triangle (bilinear) filter — fast enough for smooth playback.
     let rendered: Vec<(String, Duration)> = frames
         .par_iter()
         .map(|f| {
@@ -106,6 +105,7 @@ fn run_gif(args: &Args) {
     }
 }
 
+// display a slideshow of images from a directory
 fn run_slideshow(args: &Args) {
     let images = loader::load_directory_images(&args.path)
         .unwrap_or_else(|e| exit_error(&e));
@@ -132,6 +132,7 @@ fn run_slideshow(args: &Args) {
     terminal::leave_raw_mode();
 }
 
+// render and print the image at full resolution (ignoring terminal size, no interactivity)
 fn run_fullres(args: &Args) {
     let img = loader::load_static_image(&args.path)
         .unwrap_or_else(|e| exit_error(&e));
