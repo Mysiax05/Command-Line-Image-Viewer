@@ -1,125 +1,129 @@
 # RustTermView
 
-Narzędzie CLI do wyświetlania obrazów i animacji GIF bezpośrednio w terminalu, napisane w Rust.
+A CLI tool for displaying images and GIF animations directly in the terminal, written in Rust.
 
-## Funkcje
+## Demo
 
-- **4 tryby wyświetlania**: Truecolor, Halfblock, Grayscale, ASCII Art
-- **Statyczne obrazy**: PNG, JPEG, BMP
-- **Animacje GIF**: z równoległym pre-renderowaniem klatek (rayon)
-- **Slideshow**: automatyczny pokaz slajdów z katalogu
-- **Full-res**: wyświetlanie w pełnej rozdzielczości (scrollowalne)
-- Automatyczne dopasowanie do rozmiaru terminala z korekcją proporcji
+![RustTermView Demo](demo/Presentation.webm)
 
-## Struktura projektu
+## Features
+
+- **4 display modes**: Truecolor, Halfblock, Grayscale, ASCII Art
+- **Static images**: PNG, JPEG, BMP
+- **GIF animations**: with parallel frame pre-rendering (rayon)
+- **Slideshow**: automatic slideshow from a directory
+- **Full-res**: full-resolution display (scrollable)
+- Automatic terminal resizing with aspect ratio correction
+
+## Project Structure
 
 ```
 RustTermView/
-├── Cargo.toml              # zależności: image, crossterm, clap, rayon
+├── Cargo.toml              # dependencies: image, crossterm, clap, rayon
 ├── README.md
 ├── assets/
-│   ├── pictures/           # przykładowe obrazy (jpeg, jpg)
-│   └── gifs/               # przykładowe animacje GIF
+│   ├── pictures/           # sample images (jpeg, jpg)
+│   └── gifs/               # sample GIF animations
 └── src/
-    ├── main.rs             # punkt wejścia, routing do trybów pracy
-    ├── args.rs             # parsowanie argumentów CLI (clap)
-    ├── loader.rs           # wczytywanie plików (obrazy, GIF, katalogi)
-    ├── transform.rs        # skalowanie obrazu, konwersja do grayscale/ASCII
-    ├── render.rs           # generowanie sekwencji ANSI escape codes
-    └── terminal.rs         # zarządzanie trybem raw, obsługa klawiatury
+    ├── main.rs             # entry point, routing to operation modes
+    ├── args.rs             # CLI argument parsing (clap)
+    ├── loader.rs           # file loading (images, GIFs, directories)
+    ├── transform.rs        # image scaling, RGB to grayscale/ASCII conversion
+    ├── render.rs           # ANSI escape sequence generation
+    └── terminal.rs         # raw mode management, keyboard input handling
 ```
 
-### Co robi każdy moduł
+### What Each Module Does
 
-| Moduł | Odpowiedzialność |
+| Module | Responsibility |
 |-------|------------------|
-| `args.rs` | Definiuje argumenty CLI (`--mode`, `--fps`, `--fullres`, itd.) za pomocą biblioteki `clap` |
-| `loader.rs` | Otwiera i dekoduje pliki graficzne. Dla GIF-ów wyciąga wszystkie klatki z opóźnieniami |
-| `transform.rs` | Skaluje obraz do rozmiaru terminala z korekcją proporcji (znaki terminala są 2× wyższe niż szerokie). Zawiera też konwersję RGB → jasność |
-| `render.rs` | Zamienia piksele na tekst ANSI: kolorowe spacje (truecolor), znaki ▀ (halfblock), skala szarości lub znaki ASCII |
-| `terminal.rs` | Przełącza terminal w tryb raw (natychmiastowa reakcja na klawisze), chowa kursor, obsługuje wyjście (`q` / `Ctrl+C`) |
-| `main.rs` | Łączy wszystko — decyduje który tryb uruchomić i wykonuje główną pętlę programu |
+| `args.rs` | Defines CLI arguments (`--mode`, `--fps`, `--fullres`, etc.) using the `clap` library |
+| `loader.rs` | Opens and decodes image files. Extracts all frames with delays for GIFs |
+| `transform.rs` | Scales images to the terminal size with aspect ratio correction (terminal characters are 2× taller than wide). Also includes RGB to brightness conversion |
+| `render.rs` | Converts pixels into ANSI text: colored spaces (truecolor), `▀` characters (halfblock), grayscale, or ASCII characters |
+| `terminal.rs` | Switches the terminal to raw mode (instant keypress response), hides the cursor, and handles exit (`q` / `Ctrl+C`) |
+| `main.rs` | Ties everything together — decides which mode to launch and executes the main program loop |
 
-### Przepływ danych
+### Data Flow
 
 ```
-Argumenty CLI → wczytanie pliku → skalowanie → renderowanie do ANSI → wyświetlenie w terminalu
+CLI arguments → file loading → scaling → ANSI rendering → terminal display
 ```
 
-## Wymagania
+## Requirements
 
 - **Rust** (edition 2021)
-- Terminal wspierający ANSI escape codes (praktycznie każdy nowoczesny terminal na Linuxie/macOS)
+- Terminal supporting ANSI escape codes (virtually any modern terminal on Linux/macOS)
 
-## Kompilacja
+## Compilation
 
 ```bash
 cargo build --release
 ```
 
-## Instrukcja obsługi
+## Usage Instructions
 
-### Wyświetlanie obrazu
+### Displaying an Image
 
 ```bash
 cargo run --release -- assets/pictures/kobe.jpeg
 ```
 
-### Zmiana trybu wyświetlania
+### Changing Display Modes
 
 ```bash
-# Truecolor (domyślny) — pełne kolory 24-bit
+# Truecolor (default) — 24-bit full color
 cargo run --release -- assets/pictures/kobe.jpeg --mode truecolor
 
-# Halfblock — podwójna rozdzielczość pionowa, znak ▀
+# Halfblock — double vertical resolution using the ▀ character
 cargo run --release -- assets/pictures/kobe.jpeg --mode halfblock
 
-# Skala szarości
+# Grayscale
 cargo run --release -- assets/pictures/kobe.jpeg --mode grayscale
 
 # ASCII Art
 cargo run --release -- assets/pictures/kobe.jpeg --mode ascii
 ```
 
-### Odtwarzanie animacji GIF
+### Playing GIF Animations
 
 ```bash
 cargo run --release -- assets/gifs/oppenheimer.gif
 ```
 
-Zmiana szybkości odtwarzania:
+Changing playback speed:
 
 ```bash
 cargo run --release -- assets/gifs/oppenheimer.gif --fps 24
 ```
 
-### Slideshow (pokaz slajdów z katalogu)
+### Slideshow (Directory View)
 
 ```bash
 cargo run --release -- assets/pictures/
 ```
 
-### Pełna rozdzielczość (scrollowalna)
+### Full Resolution (Scrollable)
 
 ```bash
 cargo run --release -- assets/pictures/kobe.jpeg --fullres
 ```
 
-### Ręczne ustawianie rozmiaru
+### Manual Custom Sizing
 
 ```bash
 cargo run --release -- assets/pictures/kobe.jpeg -W 120 -H 40
 ```
 
-### Zamykanie programu
+### Exiting the Program
 
-Naciśnij **`q`** lub **`Ctrl+C`**.
+Press **`q`** or **`Ctrl+C`**.
 
-## Użyte biblioteki
+## Dependencies Used
 
-| Biblioteka | Wersja | Do czego |
+| Library | Version | Description |
 |------------|--------|----------|
-| `image` | 0.25 | Dekodowanie obrazów (PNG, JPEG, BMP, GIF), skalowanie |
-| `crossterm` | 0.27 | Obsługa terminala: raw mode, kursor, klawiatura |
-| `clap` | 4.4 | Parsowanie argumentów wiersza poleceń |
-| `rayon` | 1 | Równoległe pre-renderowanie klatek GIF |
+| `image` | 0.25 | Image decoding (PNG, JPEG, BMP, GIF), scaling |
+| `crossterm` | 0.27 | Terminal control: raw mode, cursor, keyboard |
+| `clap` | 4.4 | Command line argument parsing |
+| `rayon` | 1 | Parallel pre-rendering of GIF frames |
