@@ -4,7 +4,7 @@ A CLI tool for displaying images and GIF animations directly in the terminal, wr
 
 ## Demo
 
-![RustTermView Demo](demo/Presentation.webm)
+![RustTermView Demo](demo/Presentation.gif)
 
 ## Features
 
